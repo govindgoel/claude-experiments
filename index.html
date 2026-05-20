@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Experiments</title>
+  <style>
+    :root {
+      --bg: #08090f;
+      --surface: #0f1120;
+      --border: #1e2240;
+      --accent1: #7c6fff;
+      --accent2: #ff9d4d;
+      --accent3: #4dffd2;
+      --text: #e2e8f0;
+      --muted: #6b7a99;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── animated starfield ── */
+    #stars {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 60% 30%, #1a0a3a 0%, #08090f 70%);
+      overflow: hidden;
+    }
+    #stars::before, #stars::after {
+      content: '';
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      box-shadow:
+        120px 40px #fff, 250px 180px #aaf, 380px 90px #fff,
+        500px 220px #ffd, 640px 60px #fff, 760px 310px #aaf,
+        880px 140px #fff, 1020px 270px #ffd, 1140px 50px #fff,
+        1280px 190px #aaf, 80px 350px #fff, 310px 420px #ffd,
+        460px 380px #aaf, 590px 460px #fff, 720px 390px #ffd,
+        850px 440px #aaf, 980px 360px #fff, 1100px 480px #ffd,
+        200px 520px #fff, 430px 560px #aaf, 670px 540px #fff,
+        900px 510px #ffd, 1050px 570px #aaf, 1200px 530px #fff;
+      animation: twinkle 4s infinite alternate;
+    }
+    #stars::after {
+      width: 1px; height: 1px;
+      box-shadow:
+        60px 100px #fff9, 190px 240px #aaf9, 340px 160px #fff9,
+        480px 300px #ffd9, 610px 120px #fff9, 740px 380px #aaf9,
+        860px 200px #fff9, 990px 330px #ffd9, 1110px 80px #fff9,
+        1250px 260px #aaf9, 150px 420px #fff9, 380px 490px #ffd9;
+      animation-delay: 2s;
+    }
+    @keyframes twinkle { from { opacity: 0.6; } to { opacity: 1; } }
+
+    /* ── layout ── */
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── hero ── */
+    header { text-align: center; margin-bottom: 72px; }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #1e1060, #2a0a50);
+      border: 1px solid var(--accent1);
+      color: var(--accent1);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent3) 60%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    .built-with {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 18px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .built-with span { color: var(--accent1); font-weight: 600; }
+
+    /* ── section title ── */
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    /* ── experiment cards ── */
+    .cards { display: grid; gap: 24px; margin-bottom: 64px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card:hover { border-color: var(--accent1); box-shadow: 0 0 32px #7c6fff18; }
+    .card:hover::before { opacity: 1; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      width: 52px; height: 52px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #1a1040, #0f1830);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .card-meta { flex: 1; }
+
+    .card-number {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent1);
+      margin-bottom: 4px;
+    }
+
+    .card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+
+    .card-file {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: var(--accent3);
+      background: #0a1a14;
+      border: 1px solid #1a3a2a;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .card-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    /* feature pills */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .feature {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #0c0e1a;
+    }
+
+    /* mode table */
+    .modes {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+    .mode-row {
+      display: grid;
+      grid-template-columns: 40px 160px 1fr;
+      align-items: center;
+      padding: 10px 16px;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mode-row:last-child { border-bottom: none; }
+    .mode-row:first-child { background: #0c0e1c; font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .key {
+      font-family: monospace;
+      background: #1a1c30;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 0.82rem;
+      color: var(--accent2);
+      text-align: center;
+    }
+    .mode-name { font-weight: 600; color: var(--text); }
+    .mode-desc { color: var(--muted); }
+
+    /* run command */
+    .run-cmd {
+      margin-top: 24px;
+      background: #08090f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+    }
+    .run-cmd .prompt { color: var(--accent1); }
+    .run-cmd .cmd    { color: var(--accent3); }
+
+    /* ── tech stack ── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+
+    .stack-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .stack-item:hover { border-color: var(--accent3); }
+
+    .stack-icon { font-size: 1.6rem; margin-bottom: 10px; }
+    .stack-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .stack-role { color: var(--muted); font-size: 0.8rem; line-height: 1.4; }
+
+    /* ── setup ── */
+    .setup-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 64px;
+    }
+    .setup-box h3 { font-size: 1.1rem; margin-bottom: 20px; }
+    pre {
+      background: #08090f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--accent3);
+      overflow-x: auto;
+    }
+    pre .comment { color: var(--muted); }
+
+    /* ── footer ── */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent1); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="wrapper">
+
+  <!-- Hero -->
+  <header>
+    <div class="badge">✦ AR Experiments</div>
+    <h1>Claude Experiments</h1>
+    <p class="subtitle">
+      Real-time augmented reality experiments built with Python, OpenCV, and MediaPipe —
+      entirely generated using Claude Code.
+    </p>
+    <div class="built-with">
+      Built with <span>Claude Sonnet 4.6</span> via Claude Code
+    </div>
+  </header>
+
+  <!-- Experiments -->
+  <p class="section-title">Experiments</p>
+  <div class="cards">
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🔱</div>
+        <div class="card-meta">
+          <div class="card-number">Experiment 01</div>
+          <h2>Sudarshan Chakra AR</h2>
+          <code class="card-file">sudarshan_chakra_ar.py</code>
+        </div>
+      </div>
+      <p class="card-desc">
+        Real-time AR overlay of the mythological Sudarshan Chakra — weapon of Lord Krishna —
+        rendered as a lateral spinning disc on your index finger's distal phalanx.
+        The chakra auto-scales to your finger, tilts with it, and glows with a divine cosmic aura.
+      </p>
+      <div class="features">
+        <span class="feature">Lateral disc perspective</span>
+        <span class="feature">Pulsing divine aura</span>
+        <span class="feature">Rotating light rays</span>
+        <span class="feature">Particle sparkles</span>
+        <span class="feature">Auto-scales to finger</span>
+        <span class="feature">Tracks finger tilt</span>
+      </div>
+      <div class="run-cmd">
+        <span class="prompt">$</span>
+        <span class="cmd">python3 sudarshan_chakra_ar.py</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">⚡</div>
+        <div class="card-meta">
+          <div class="card-number">Experiment 02</div>
+          <h2>Finger Connect AR</h2>
+          <code class="card-file">finger_connect_ar.py</code>
+        </div>
+      </div>
+      <p class="card-desc">
+        Hold both hands up with fingertips facing each other — the space between your fingers
+        comes alive with energy effects. Tracks all 10 fingertips across both hands simultaneously
+        with persistent motion trails and additive glow blending.
+      </p>
+      <div class="modes">
+        <div class="mode-row">
+          <div>Key</div><div>Mode</div><div>Description</div>
+        </div>
+        <div class="mode-row">
+          <div class="key">1</div>
+          <div class="mode-name">Plasma Streams</div>
+          <div class="mode-desc">Particles flow along wobbling beams between fingertips</div>
+        </div>
+        <div class="mode-row">
+          <div class="key">2</div>
+          <div class="mode-name">Lightning Arcs</div>
+          <div class="mode-desc">Jagged flickering arcs with random branches</div>
+        </div>
+        <div class="mode-row">
+          <div class="key">3</div>
+          <div class="mode-name">Spirograph Web</div>
+          <div class="mode-desc">Evolving spirograph patterns bloom from each fingertip</div>
+        </div>
+        <div class="mode-row">
+          <div class="key">4</div>
+          <div class="mode-name">Constellation</div>
+          <div class="mode-desc">Star nodes spawn and form a drifting connected web</div>
+        </div>
+        <div class="mode-row">
+          <div class="key">␣</div>
+          <div class="mode-name">Randomise</div>
+          <div class="mode-desc">Switch colour palette and regenerate pattern</div>
+        </div>
+      </div>
+      <div class="run-cmd">
+        <span class="prompt">$</span>
+        <span class="cmd">python3 finger_connect_ar.py</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tech Stack -->
+  <p class="section-title">Tech Stack</p>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="stack-icon">🖐</div>
+      <div class="stack-name">MediaPipe</div>
+      <div class="stack-role">21-point hand landmark detection, HandLandmarker Tasks API</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">👁</div>
+      <div class="stack-name">OpenCV</div>
+      <div class="stack-role">Camera capture, drawing primitives, alpha blending</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">🔢</div>
+      <div class="stack-name">NumPy</div>
+      <div class="stack-role">Matrix transforms, affine warping, pixel manipulation</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">🐍</div>
+      <div class="stack-name">Python 3.13</div>
+      <div class="stack-role">Runtime — tested on macOS with Apple M2 Pro</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">🤖</div>
+      <div class="stack-name">Claude Code</div>
+      <div class="stack-role">Entire codebase generated via Claude Sonnet 4.6</div>
+    </div>
+  </div>
+
+  <!-- Setup -->
+  <div class="setup-box">
+    <h3>⚙ Setup</h3>
+    <pre><span class="comment"># Create and activate a virtual environment</span>
+python3 -m venv .
+source bin/activate
+
+<span class="comment"># Install dependencies</span>
+pip install opencv-python mediapipe numpy
+
+<span class="comment"># Run an experiment (hand_landmarker.task is included)</span>
+python3 sudarshan_chakra_ar.py
+python3 finger_connect_ar.py</pre>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    Built with <a href="https://claude.ai/code" target="_blank">Claude Code</a> by Anthropic &nbsp;·&nbsp;
+    <a href="https://github.com/govindgoel/claude-experiments" target="_blank">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>
