@@ -5,3 +5,8 @@ pyvenv.cfg
 CACHEDIR.TAG
 __pycache__/
 *.pyc
+imd_data/
+output/
+share/
+CACHEDIR.TAG
+hand_landmarker.task
